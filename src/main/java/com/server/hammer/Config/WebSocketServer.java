@@ -32,7 +32,9 @@ public class WebSocketServer {
     private static AtomicInteger onlineCount = new AtomicInteger(0);
     //concurrent包的线程安全Set，用来存放每个客户端对应的WebSocket对象。
     private static CopyOnWriteArraySet<WebSocketServer> webSocketSet = new CopyOnWriteArraySet<>();
+    //用于记录会议室中的人
     private static final Map<String, Set<Session>> rooms = new ConcurrentHashMap();
+    //对应每个session与其studentId
     private static final Map<Session, String> match=new ConcurrentHashMap<>();
     private static final Map<String,Session> reverseMatch=new ConcurrentHashMap<>();
     private boolean isFirst=true;

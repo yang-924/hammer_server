@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
-    @Query(value = "from User where userId = :username ")
+    //@Query(value = "from User where userId = :username ")
     User findUserByUserId (String userid);
 
 
