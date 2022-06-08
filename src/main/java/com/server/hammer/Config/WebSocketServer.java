@@ -4,6 +4,7 @@ import com.server.hammer.ApplicationContextRegister;
 import com.server.hammer.Entity.User;
 import com.server.hammer.Entity.UserInRoom;
 import com.server.hammer.Repository.UserInRoomRepository;
+import com.server.hammer.Service.MeetingsService;
 import com.server.hammer.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,9 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,16 +37,21 @@ public class WebSocketServer {
     //对应每个session与其studentId
     private static final Map<Session, String> match=new ConcurrentHashMap<>();
     private static final Map<String,Session> reverseMatch=new ConcurrentHashMap<>();
+    //辨别是发送会议号还是聊天发送消息
     private boolean isFirst=true;
     //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
     //接收sid
     private String sid = "";
     private String roomName="";
+    //记载当前自动邀请入会的人员
     private List<UserInRoom> users=null;
+
     boolean flag=true;
     @Autowired
     private UserService userService;
+    @Autowired
+    private MeetingsService meetingsService;
 
     /**
      * 连接建立成功调用的方法
@@ -54,16 +59,19 @@ public class WebSocketServer {
     @OnOpen
     public void onOpen(Session session, @PathParam("sid") String sid) throws IOException {
         this.session = session;
-        webSocketSet.add(this);     // 加入set中
+        webSocketSet.add(this); // 加入set中
         this.sid = sid;
-        addOnlineCount();
+        addOnlineCount();// 在线数加1
+
         match.put(session,sid);
         reverseMatch.put(sid,session);
-        isFirst=true;// 在线数加1
+        isFirst=true;//将第一次发送信息记为真
+
+        //log.info(getWeekday(date).toString());
         try {
             sendMessage("conn_success");
             log.info("有新客户端开始监听,sid=" + sid + ",当前在线人数为:" + getOnlineCount());
-            AutoMeeting("12");
+            //AutoMeeting("12");
             ApplicationContext act = ApplicationContextRegister.getApplicationContext();
             userService=act.getBean(UserService.class);
 
@@ -71,7 +79,7 @@ public class WebSocketServer {
             if (users==null)
                  flag=false;
             if(flag)
-            log.info("有这些用户");
+            log.info("有这些用户"+users.toString());
         } catch (IOException e) {
             log.error("websocket IO Exception");
         }
@@ -125,6 +133,7 @@ public class WebSocketServer {
         for (Session sessions : rooms.get(roomName)) {
             sids.add(match.get(sessions));
         }
+        log.info(sids.toString());
         try {
             sendMessage("会议号 "+roomName+"中用户" + this.sid + "发布消息：" + message, sids);
         } catch (IOException e) {
@@ -210,7 +219,7 @@ public class WebSocketServer {
         userService=act.getBean(UserService.class);
         users = userService.getUsers(roomId);
         isFirst=false;
-        roomName=roomId;
+        //this.roomName=roomId;
         if (users == null) log.info("没查到");
         else {
             for (UserInRoom user : users) {
@@ -234,4 +243,9 @@ public class WebSocketServer {
             }
         }
     }
+
+
+
+
+
 }
