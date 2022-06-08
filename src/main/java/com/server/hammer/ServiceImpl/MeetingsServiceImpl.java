@@ -14,8 +14,11 @@ public class MeetingsServiceImpl implements MeetingsService {
     @Autowired
     MeetingsRepository meetingsRepository;
     @Override
-    public List<String> findMeetings(Integer weekday, Time min, Time max){
-        return meetingsRepository.findMeetingsByWeekdayAndTimeBetween(weekday,min,max);
+    public List<Meeting> findMeetings(Integer weekday, Time min, Time max){
+       List<Meeting> meetings= meetingsRepository.findAllByWeekdayAndTimeBetween(weekday,min,max);
+
+
+       return meetings;
     };
 
 }

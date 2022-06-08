@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface MeetingsRepository extends JpaRepository<Meeting,Integer> {
 
-    List<String> findMeetingsByWeekdayAndTimeBetween(Integer weekday, Time min,Time max);
+    List<Meeting> findAllByWeekdayAndTimeBetween(Integer weekday, Time min,Time max);
 }
