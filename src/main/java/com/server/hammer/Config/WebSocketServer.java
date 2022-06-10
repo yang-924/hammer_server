@@ -1,9 +1,7 @@
 package com.server.hammer.Config;
 
 import com.server.hammer.ApplicationContextRegister;
-import com.server.hammer.Entity.User;
-import com.server.hammer.Entity.UserInRoom;
-import com.server.hammer.Repository.UserInRoomRepository;
+import com.server.hammer.Entity.UserInMeeting;
 import com.server.hammer.Service.MeetingsService;
 import com.server.hammer.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import javax.servlet.http.HttpSession;
+
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -45,7 +41,7 @@ public class WebSocketServer {
     private String sid = "";
     private String roomName="";
     //记载当前自动邀请入会的人员
-    private List<UserInRoom> users=null;
+    private List<UserInMeeting> users=new ArrayList<>();
 
     boolean flag=true;
     @Autowired
@@ -222,7 +218,7 @@ public class WebSocketServer {
         //this.roomName=roomId;
         if (users == null) log.info("没查到");
         else {
-            for (UserInRoom user : users) {
+            for (UserInMeeting user : users) {
                 if (reverseMatch.containsKey(user.getUserId())) {
                     if (!rooms.containsKey(roomId)) {
                         // 创建房间不存在时，创建房间

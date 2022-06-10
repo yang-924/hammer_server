@@ -1,12 +1,15 @@
 package com.server.hammer.Service;
 
 import com.server.hammer.Entity.User;
-import com.server.hammer.Entity.UserInRoom;
+import com.server.hammer.Entity.UserInMeeting;
+import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.List;
 
 public interface UserService {
 
-    List<UserInRoom> getUsers(String roomId);
+    List<UserInMeeting> getUsers(String roomId);
     User findUserById(String userid);
+    void importExcel(MultipartFile excelFile,String mid);
 }

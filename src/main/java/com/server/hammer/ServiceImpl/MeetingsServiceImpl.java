@@ -20,5 +20,8 @@ public class MeetingsServiceImpl implements MeetingsService {
 
        return meetings;
     };
+    public List<Meeting> findMeetingsByTeacher(String tid){
+        return meetingsRepository.findAllByTid(tid);
+    }
 
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.websocket.server.PathParam;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -26,19 +27,18 @@ public class UserController {
     @Autowired
     UserService userService;
     @PostMapping("/login")
-    public User login(@RequestBody Map<String, String> params) {
-        String username = params.get("username");
+    public int login(@RequestBody Map<String, String> params) {
+        String username = params.get("userId");
         String password = params.get("password");
         User user = userService.findUserById(username);
         if(user == null){
-            user = new User();
-            return user;
+            return 0;
         }
         String verify =user.getPassword();
-        if (verify != password) {
-            user = new User();
+        if (!verify.equals(password)) {
+            return 0;
         }
-        return user;
+        return 1;
     };
 
     @PostMapping("/upload")
@@ -65,5 +65,14 @@ public class UserController {
         } catch (IOException e){
             return false;
         }
+
+
     }
+
+    @GetMapping("/excel/upload/{mid}")
+    public void importExcel(@RequestParam("excelFile")MultipartFile multipartFile, @PathParam("mid") String mid){
+        userService.importExcel(multipartFile,mid);
+    }
+
+
 }

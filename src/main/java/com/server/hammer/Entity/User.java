@@ -18,6 +18,9 @@ public class User {
     private String userName;
     @Column(name = "password")
     private String password;
+    @Column(name = "user_type")
+    private int userType;
+    //1 是student 0 是teacher
 
     public String getUserId() {
         return userId;
@@ -30,6 +33,8 @@ public class User {
     public String getUserName() {
         return userName;
     }
+
+    public int getUserType() {return userType;}
 
     public void setUserId(String userId) {
         this.userId = userId;
