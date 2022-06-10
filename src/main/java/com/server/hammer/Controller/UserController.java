@@ -69,8 +69,9 @@ public class UserController {
 
     }
 
-    @GetMapping("/excel/upload/{mid}")
-    public void importExcel(@RequestParam("excelFile")MultipartFile multipartFile, @PathParam("mid") String mid){
+    @PostMapping("/upload")
+    @ResponseBody
+    public void importExcel(@RequestParam("mid") String mid,MultipartFile multipartFile){
         userService.importExcel(multipartFile,mid);
     }
 
