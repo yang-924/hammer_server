@@ -1,47 +1,53 @@
 package com.server.hammer.Controller;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.server.hammer.Entity.User;
 import com.server.hammer.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.websocket.server.PathParam;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
-@Controller
+@RestController
 @CrossOrigin
 public class UserController {
     @Autowired
     UserService userService;
     @PostMapping("/login")
-    public int login(@RequestBody Map<String, String> params) {
-        String username = params.get("userId");
-        String password = params.get("password");
-        User user = userService.findUserById(username);
+    @ResponseBody
+    JSONObject login(String userid, String password)  {
+        User user = userService.findUserById(userid);
+            log.info(userid+password);
+        JSONObject obj= new JSONObject();
         if(user == null){
-            return 0;
+            obj.put("success",false);
+            obj.put("account_type",-1);
+            obj.put("username","");
+            return obj;
         }
         String verify =user.getPassword();
         if (!verify.equals(password)) {
-            return 0;
+            obj.put("success",false);
+            obj.put("account_type",-1);
+            obj.put("username","");
+            return obj;
         }
-        return 1;
+        obj.put("success",true);
+        obj.put("account_type",0);
+        obj.put("username",user.getUserName());
+        return obj;
     };
 
-    @PostMapping("/upload")
+    @PostMapping("/upload/new")
     @ResponseBody
     public Boolean upload(@RequestParam("userId") String userId, MultipartFile file,String fileName)
     {
@@ -71,8 +77,8 @@ public class UserController {
 
     @PostMapping("/upload")
     @ResponseBody
-    public void importExcel(@RequestParam("mid") String mid,MultipartFile multipartFile){
-        userService.importExcel(multipartFile,mid);
+    public void importExcel(@RequestParam("mid") String mid,MultipartFile file){
+        userService.importExcel(file,mid);
     }
 
 

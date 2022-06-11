@@ -4,29 +4,34 @@ package com.server.hammer.Controller;
 import com.server.hammer.Entity.Meeting;
 import com.server.hammer.Service.MeetingsService;
 import lombok.extern.slf4j.Slf4j;
+import com.alibaba.fastjson2.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@CrossOrigin
 @Slf4j
 @RestController
-@RequestMapping("/meetings")
 public class MeetingsController {
     @Autowired
     MeetingsService meetingsService;
 
-    @PostMapping("/teacher")
-    public List<String> findMidByTid(String tid){
-        List<String> meetings=new ArrayList<>() ;
+    @GetMapping("/getClass")
+    @ResponseBody
+    public List<JSONObject> findMidByTid(@RequestParam("uid") String tid){
+        List<JSONObject> res=new ArrayList<>() ;
         List<Meeting> meeting=meetingsService.findMeetingsByTeacher(tid);
         for (Meeting meeting1 : meeting){
-            meetings.add(meeting1.getMid());
+            JSONObject  obj=new JSONObject();
+            obj.put("name",meeting1.getName());
+            obj.put("mid",meeting1.getMid());
+            obj.put("weekday",meeting1.getWeekday());
+            obj.put("time",meeting1.getTime());
+            log.info(obj.toString());
+            res.add(obj);
         }
-        return meetings;
+        return res;
     }
 
 }

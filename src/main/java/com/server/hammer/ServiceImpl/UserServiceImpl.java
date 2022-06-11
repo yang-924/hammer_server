@@ -86,6 +86,7 @@ public class UserServiceImpl implements UserService {
             HSSFRow row = sheet.getRow(rowNum);
             if (row!=null){
                 UserInMeeting user = new UserInMeeting();
+                row.getCell(0).setCellType(CellType.STRING);
                 user.setUserId(row.getCell(0).getStringCellValue());
                 user.setMeetingId(mid);
                 list.add(user);
@@ -107,7 +108,7 @@ public class UserServiceImpl implements UserService {
             XSSFRow row = sheet.getRow(rowNum);
             if (row != null) {
                 UserInMeeting user = new UserInMeeting();
-
+                row.getCell(0).setCellType(CellType.STRING);
                 user.setUserId(row.getCell(0).getStringCellValue());
                 user.setMeetingId(mid);
                 list.add(user);
