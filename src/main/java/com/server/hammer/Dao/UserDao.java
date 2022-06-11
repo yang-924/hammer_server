@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface UserDao {
     List<UserInMeeting> getUsers(String roomId);
-    public User findUserById(String userid);
+    User findUserById(String userid);
+    User findUserByName(String name);
 }

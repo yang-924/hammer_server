@@ -10,6 +10,6 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, Integer> {
     //@Query(value = "from User where userId = :username ")
     User findUserByUserId (String userid);
-
+    User findUserByUserName(String name);
 
 }

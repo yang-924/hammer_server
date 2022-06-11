@@ -118,18 +118,9 @@ public class UserServiceImpl implements UserService {
         return list;
 
     }
-    /*
-    获取没有文件后缀的文件名
-    */
-
-    public static String getFileNameNoEx(String filename) {
-        if ((filename != null) && (filename.length() > 0)) {
-            int dot = filename.lastIndexOf('.');
-            if ((dot >-1) && (dot < (filename.length()))) {
-                return filename.substring(0, dot);
-            }
-        }
-        return filename;
+    @Override
+    public User findUserByName(String name){
+        return userDao.findUserByName(name);
     }
 
 

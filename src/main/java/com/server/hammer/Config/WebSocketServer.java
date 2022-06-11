@@ -1,6 +1,7 @@
 package com.server.hammer.Config;
 
 import com.server.hammer.ApplicationContextRegister;
+import com.server.hammer.Entity.Meeting;
 import com.server.hammer.Entity.UserInMeeting;
 import com.server.hammer.Service.MeetingsService;
 import com.server.hammer.Service.UserService;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 @Slf4j
 @Service
-@ServerEndpoint("/api/websocket/{sid}")
+@ServerEndpoint("/websocket/{userId}")
 public class WebSocketServer {
 
     //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
@@ -53,32 +54,18 @@ public class WebSocketServer {
      * 连接建立成功调用的方法
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("sid") String sid) throws IOException {
+    public void onOpen(Session session, @PathParam("userId") String sid) throws IOException {
         this.session = session;
-        webSocketSet.add(this); // 加入set中
         this.sid = sid;
+        webSocketSet.add(this); // 加入set中
+
         addOnlineCount();// 在线数加1
 
         match.put(session,sid);
         reverseMatch.put(sid,session);
-        isFirst=true;//将第一次发送信息记为真
 
-        //log.info(getWeekday(date).toString());
-        try {
-            sendMessage("conn_success");
-            log.info("有新客户端开始监听,sid=" + sid + ",当前在线人数为:" + getOnlineCount());
-            //AutoMeeting("12");
-            ApplicationContext act = ApplicationContextRegister.getApplicationContext();
-            userService=act.getBean(UserService.class);
+        log.info("有新客户端连接,sid=" + sid + ",当前在线人数为:" + getOnlineCount());
 
-            users = userService.getUsers("12");
-            if (users==null)
-                 flag=false;
-            if(flag)
-            log.info("有这些用户"+users.toString());
-        } catch (IOException e) {
-            log.error("websocket IO Exception");
-        }
     }
 
     /**
@@ -104,36 +91,52 @@ public class WebSocketServer {
      * @Param message 客户端发送过来的消息
      */
     @OnMessage
-    public void onMessage(String message, Session session,boolean flag,@PathParam("sid")String sid) {
-        flag=isFirst;
-        if(flag){
-            if (!rooms.containsKey(message)) {
-                // 创建房间不存在时，创建房间
-                Set<Session> room = new HashSet<>();
-                // 添加用户
-                room.add(session);
-                rooms.put(message, room);
-            } else {
-                // 房间已存在，直接添加用户到相应的房间
-                rooms.get(message).add(session);
-            }
-            System.out.println("a client has connected!");
-            isFirst=false;
-            roomName =message;
+    public void onMessage(String message, Session session,boolean flag,@PathParam("userId")String sid) throws IOException {
+        ApplicationContext act = ApplicationContextRegister.getApplicationContext();
+        userService=act.getBean(UserService.class);
+        meetingsService=act.getBean(MeetingsService.class);
 
+        String[] str = message.split("[#]");
+        /**
+         * 加入课堂
+         */
+        if(str[0].equals("CJ")){
+            Meeting meeting1=meetingsService.findMeetingById(str[1]);
+            if (meeting1 != null){
+                if (!rooms.containsKey(str[1])) {
+                    // 创建房间不存在时，创建房间
+                    Set<Session> room = new HashSet<>();
+                    // 添加用户
+                    room.add(session);
+                    rooms.put(str[1], room);
+                } else {
+                    // 房间已存在，直接添加用户到相应的房间
+                    rooms.get(str[1]).add(session);
+                }
+                System.out.println("a client has connected!");
+                sendMessage("CR#1"+meeting1.getName()+meeting1.getWeekday()+meeting1.getTime());
+            }
+            else {sendMessage("CR#2");}
         }
-        this.sid=sid;
-        log.info("收到来自客户端 sid=" + sid + " 的信息:" + message);
-        // 群发消息
-        HashSet<String> sids = new HashSet<>();
-        for (Session sessions : rooms.get(roomName)) {
-            sids.add(match.get(sessions));
+        /**
+         * 离开课堂
+         */
+        if(str[0].equals("CL")){
+            rooms.get(str[1]).remove(session);
         }
-        log.info(sids.toString());
-        try {
-            sendMessage("会议号 "+roomName+"中用户" + this.sid + "发布消息：" + message, sids);
-        } catch (IOException e) {
-            e.printStackTrace();
+        /**
+         * 发送弹幕
+         */
+        if(str[0].equals("BS")) {
+            HashSet<String> sids = new HashSet<>();
+            for (Session sessions : rooms.get(str[1]) ){
+                sids.add(match.get(sessions));
+            }
+            try {
+                sendMessage( "BR#"+str[2] + "#" + str[3], sids);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -213,30 +216,20 @@ public class WebSocketServer {
     public  void AutoMeeting(String roomId) throws IOException {
         ApplicationContext act = ApplicationContextRegister.getApplicationContext();
         userService=act.getBean(UserService.class);
+        meetingsService=act.getBean(MeetingsService.class);
+        Meeting meeting=meetingsService.findMeetingById(roomId);
         users = userService.getUsers(roomId);
-        isFirst=false;
-        //this.roomName=roomId;
+        HashSet<String> sids = new HashSet<>();
         if (users == null) log.info("没查到");
         else {
             for (UserInMeeting user : users) {
                 if (reverseMatch.containsKey(user.getUserId())) {
-                    if (!rooms.containsKey(roomId)) {
-                        // 创建房间不存在时，创建房间
-                        Set<Session> room = new HashSet<>();
-                        // 添加用户
-                        room.add(session);
-                        rooms.put(roomId, room);
-                    } else {
-                        // 房间已存在，直接添加用户到相应的房间
-                        rooms.get(roomId).add(session);
-                    }
-                    HashSet<String> sids = new HashSet<>();
                     for (Session sessions : rooms.get(roomId)) {
                         sids.add(match.get(sessions));
                     }
-                    sendMessage("会议号 " + roomId + "中用户" + "已经入", sids);
                 }
             }
+            sendMessage("CI# " + roomId + "#" +meeting.getName()+"#"+ meeting.getWeekday()+"#"+meeting.getTime(), sids);
         }
     }
 

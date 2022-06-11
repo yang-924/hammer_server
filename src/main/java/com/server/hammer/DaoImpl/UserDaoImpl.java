@@ -27,6 +27,6 @@ public class UserDaoImpl implements UserDao {
         return  userRepository.findUserByUserId(userid);
     }
 
-
+    public User findUserByName(String name){return  userRepository.findUserByUserName(name);}
 
 }

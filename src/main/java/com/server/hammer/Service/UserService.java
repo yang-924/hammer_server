@@ -12,4 +12,5 @@ public interface UserService {
     List<UserInMeeting> getUsers(String roomId);
     User findUserById(String userid);
     void importExcel(MultipartFile excelFile,String mid);
+    User findUserByName(String name);
 }

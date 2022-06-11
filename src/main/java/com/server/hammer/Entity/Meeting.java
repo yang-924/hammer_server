@@ -32,6 +32,6 @@ public class Meeting {
 
     @Column(name = "tid")
     private String tid;
-    @Column(name = "name")
+
     private String name;
 }
