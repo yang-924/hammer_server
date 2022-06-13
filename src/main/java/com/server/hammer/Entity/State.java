@@ -25,7 +25,7 @@ public class State {
 
     private String uid;
     private String state;
-
+    private String time;
 
     public State(String state){
 
@@ -34,8 +34,9 @@ public class State {
     }
 
 
-    public State(String uid, String state) {
+    public State(String uid, String state,String time) {
         this.uid=uid;
         this.state=state;
+        this.time=time;
     }
 }

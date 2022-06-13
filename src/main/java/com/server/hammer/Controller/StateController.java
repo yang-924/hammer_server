@@ -21,9 +21,9 @@ public class StateController {
     @GetMapping("/create")
 
     public Response create(@RequestBody State state) {
-        stateService.create(state.getUid(),state.getState());
+        stateService.create(state.getUid(),state.getState(),state.getTime());
 
-        return Response.success(stateService.create(state.getUid(),state.getState()));
+        return Response.success(stateService.create(state.getUid(),state.getState(),state.getTime()));
     }
 
     /**

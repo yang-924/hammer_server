@@ -11,7 +11,7 @@ public interface StateService {
   *
   * @return String
   */
- String create(String id, String news);
+ String create(String id, String news,String time);
 
  /**
   * 更新

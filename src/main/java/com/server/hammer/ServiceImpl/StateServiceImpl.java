@@ -26,9 +26,9 @@ public class StateServiceImpl implements StateService {
      * @return String
      */
     @Override
-    public String create(String id,String  news) {
+    public String create(String id,String  news,String time) {
         //第一种方式，直接继承xxxRepository接口
-        State state = new State(id,news);
+        State state = new State(id,news,time);
         stateRepository.save(state);
         log.info("第一种方式新增成功，state：" + state);
         //mongoTemplate.insert(state);
